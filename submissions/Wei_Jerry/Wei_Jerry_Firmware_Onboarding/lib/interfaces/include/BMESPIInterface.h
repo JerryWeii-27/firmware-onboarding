@@ -4,14 +4,14 @@
 #include <Adafruit_BME280.h>
 #include <etl/singleton.h>
 
-class BMEI2CInterface {
+class BMESPIInterface {
 public:
-  BMEI2CInterface() = default;
+  BMESPIInterface() = default;
 
   bool begin();
   float readTemperature();
-  // Code here!
+
 private:
   Adafruit_BME280 bme;
 };
-using BMEI2CInterfaceInstance = etl::singleton<BMEI2CInterface>;
+using BMESPIInterfaceInstance = etl::singleton<BMESPIInterface>;
