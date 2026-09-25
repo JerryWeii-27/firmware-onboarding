@@ -6,7 +6,7 @@
 
 class BMESPIInterface {
 public:
-  BMESPIInterface() = default;
+  BMESPIInterface();
 
   bool begin();
   float readTemperature();

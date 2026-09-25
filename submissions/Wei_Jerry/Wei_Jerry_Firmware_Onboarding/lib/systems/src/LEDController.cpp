@@ -1,6 +1,11 @@
 #include "LEDController.h"
 
-void LEDController::begin() { digitalWrite(BMEConstants::LED_PIN, LOW); }
+void LEDController::begin() {
+  pinMode(BMEConstants::LED_PIN, OUTPUT);
+  digitalWrite(BMEConstants::LED_PIN, LOW);
+  lastT = millis();
+  ledState = 0;
+}
 
 static unsigned long calcInterval(const float temperature) {
   if (temperature < BMEConstants::MIN_TEMP) {
@@ -8,7 +13,7 @@ static unsigned long calcInterval(const float temperature) {
   }
 
   if (temperature > BMEConstants::MAX_TEMP) {
-    return BMEConstants::MAX_TEMP;
+    return BMEConstants::FAST_BLINK_MS;
   }
 
   const uint32_t tempRange = BMEConstants::MAX_TEMP - BMEConstants::MIN_TEMP;
@@ -21,7 +26,6 @@ static unsigned long calcInterval(const float temperature) {
 
 void LEDController::update(const float temperature) {
   if (isnan(temperature)) {
-    Serial.println("Temperature is NaN.");
     return;
   }
 

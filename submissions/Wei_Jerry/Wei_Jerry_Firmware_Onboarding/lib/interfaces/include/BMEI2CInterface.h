@@ -10,7 +10,7 @@ public:
 
   bool begin();
   float readTemperature();
-  // Code here!
+
 private:
   Adafruit_BME280 bme;
 };

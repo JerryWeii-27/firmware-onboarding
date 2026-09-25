@@ -1,3 +1,4 @@
+#pragma once
 #include "Arduino.h"
 #include "BMEConstants.h"
 #include <etl/singleton.h>

@@ -4,13 +4,15 @@
 #include <Arduino.h>
 
 void setup() {
-  BMEI2CInterface &bmeInterface = BMEI2CInterfaceInstance::instance();
-  if (!bmeInterface.begin()) {
+  Serial.begin(115200);
+
+  BMEI2CInterfaceInstance::create();
+  if (!BMEI2CInterfaceInstance::instance().begin()) {
     Serial.println("main_i2c.cpp: Failed to initialize.");
   }
 
-  LEDController &ledController = LEDControllerInstance::instance();
-  ledController.begin();
+  LEDControllerInstance::create();
+  LEDControllerInstance::instance().begin();
 }
 void loop() {
   LEDControllerInstance::instance().update(
