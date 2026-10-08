@@ -9,10 +9,15 @@ public:
   LEDController() = default;
 
   void begin();
-  void update(float temperature);
+  void updateBlinkInterval(float temperature);
+  void updateLEDState(unsigned long now);
+  unsigned long getBlinkIntervalMs() const;
 
 private:
+  static unsigned long mapTemperatureToIntervalMs(float temperature);
+
   unsigned long lastT;
+  unsigned long blinkIntervalMs;
   bool ledState;
 };
 

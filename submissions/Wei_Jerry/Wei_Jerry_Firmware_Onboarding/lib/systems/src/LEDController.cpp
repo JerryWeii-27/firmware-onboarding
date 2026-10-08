@@ -1,38 +1,45 @@
 #include "LEDController.h"
 
 void LEDController::begin() {
-  pinMode(BMEConstants::LED_PIN, OUTPUT);
-  digitalWrite(BMEConstants::LED_PIN, LOW);
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, LOW);
   lastT = millis();
+  blinkIntervalMs = BMEConstants::SLOW_BLINK_MS;
   ledState = 0;
 }
 
-static unsigned long calcInterval(const float temperature) {
-  if (temperature < BMEConstants::MIN_TEMP) {
-    return BMEConstants::SLOW_BLINK_MS;
-  }
+unsigned long LEDController::mapTemperatureToIntervalMs(
+    const float temperature) {
+  // Clamp to [MIN_TEMP, MAX_TEMP], then linearly ramp the blink interval:
+  // colder -> slower blink, warmer -> faster blink.
+  const float tempClamped =
+      constrain(temperature, BMEConstants::MIN_TEMP, BMEConstants::MAX_TEMP);
+  const float percentage =
+      (tempClamped - BMEConstants::MIN_TEMP) /
+      (BMEConstants::MAX_TEMP - BMEConstants::MIN_TEMP);
 
-  if (temperature > BMEConstants::MAX_TEMP) {
-    return BMEConstants::FAST_BLINK_MS;
-  }
-
-  const uint32_t tempRange = BMEConstants::MAX_TEMP - BMEConstants::MIN_TEMP;
-  const uint32_t blinkRange =
-      BMEConstants::SLOW_BLINK_MS - BMEConstants::FAST_BLINK_MS;
-
-  return BMEConstants::FAST_BLINK_MS +
-         blinkRange * (temperature - BMEConstants::MIN_TEMP) / tempRange;
+  const float intervalMs =
+      float(BMEConstants::SLOW_BLINK_MS) +
+      percentage * (float(BMEConstants::FAST_BLINK_MS) -
+                    float(BMEConstants::SLOW_BLINK_MS));
+  return static_cast<unsigned long>(intervalMs);
 }
 
-void LEDController::update(const float temperature) {
+void LEDController::updateBlinkInterval(const float temperature) {
   if (isnan(temperature)) {
-    return;
+    return; // keep the last known interval if the sensor read is invalid
   }
+  blinkIntervalMs = mapTemperatureToIntervalMs(temperature);
+}
 
-  unsigned long deltaT = millis() - lastT;
-  if (deltaT > calcInterval(temperature)) {
+void LEDController::updateLEDState(const unsigned long now) {
+  if (now - lastT >= blinkIntervalMs) {
+    lastT = now;
     ledState = !ledState;
-    digitalWrite(BMEConstants::LED_PIN, ledState ? HIGH : LOW);
-    lastT = millis();
+    digitalWrite(LED_BUILTIN, ledState ? HIGH : LOW);
   }
+}
+
+unsigned long LEDController::getBlinkIntervalMs() const {
+  return blinkIntervalMs;
 }
